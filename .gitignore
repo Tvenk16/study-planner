@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Personal exam data, created automatically when the program runs
+exams.json
+.venv/
