@@ -2,7 +2,10 @@
 
 import argparse
 import sys
+
 from datetime import date, datetime
+
+from tabulate import tabulate
 
 from storage import load_exams, save_exams
 
@@ -21,6 +24,13 @@ def find_exam(exams, name):
         if exam["name"].lower() == name.lower():
             return exam
     return None
+
+
+def upcoming_exams(exams):
+    """Return exams that haven't happened yet, soonest first."""
+    today = date.today()
+    future = [exam for exam in exams if date.fromisoformat(exam["date"]) >= today]
+    return sorted(future, key=lambda exam: exam["date"])
 
 
 def add_exam(args):
@@ -45,6 +55,21 @@ def add_exam(args):
     print(f"Added '{args.name}' on {exam_date} with {len(topic_names)} topics.")
 
 
+def show_countdown(args):
+    exams = upcoming_exams(load_exams())
+    if not exams:
+        print('No upcoming exams. Add one with: python3 src/planner.py add "Name" YYYY-MM-DD "Topic1,Topic2"')
+        return
+
+    today = date.today()
+    rows = []
+    for exam in exams:
+        days_left = (date.fromisoformat(exam["date"]) - today).days
+        topics_left = sum(1 for topic in exam["topics"] if not topic["done"])
+        rows.append([exam["name"], exam["date"], days_left, topics_left])
+    print(tabulate(rows, headers=["Exam", "Date", "Days Left", "Topics Left"]))
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description="Plan your studying before exams.")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -55,6 +80,9 @@ def build_parser():
     add.add_argument("topics", help='comma-separated topics, like "Classes,Interfaces"')
     add.set_defaults(func=add_exam)
 
+    countdown = commands.add_parser("countdown", help="show days left for each exam")
+    countdown.set_defaults(func=show_countdown)
+    
     return parser
 
 
