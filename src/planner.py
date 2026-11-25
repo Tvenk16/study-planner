@@ -90,6 +90,25 @@ def show_plan(args):
     print(tabulate(rows, headers=["Date", "Exam", "Topic"]))
 
 
+def mark_done(args):
+    exams = load_exams()
+    exam = find_exam(exams, args.exam)
+    if exam is None:
+        sys.exit(f"Error: no exam named '{args.exam}'. Run countdown to see your exams.")
+
+    for topic in exam["topics"]:
+        if topic["name"].lower() == args.topic.lower():
+            if topic["done"]:
+                print(f"'{topic['name']}' was already marked as done.")
+                return
+            topic["done"] = True
+            save_exams(exams)
+            print(f"Marked '{topic['name']}' as done for {exam['name']}.")
+            return
+
+    sys.exit(f"Error: '{exam['name']}' has no topic named '{args.topic}'.")
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description="Plan your studying before exams.")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -105,6 +124,11 @@ def build_parser():
 
     plan = commands.add_parser("plan", help="show a day-by-day study schedule")
     plan.set_defaults(func=show_plan)
+
+    done = commands.add_parser("done", help="mark a topic as studied")
+    done.add_argument("exam", help="exam name")
+    done.add_argument("topic", help="topic name")
+    done.set_defaults(func=mark_done)
 
     return parser
 
