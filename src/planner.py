@@ -7,6 +7,8 @@ from datetime import date, datetime
 
 from tabulate import tabulate
 
+from scheduler import spread_topics
+
 from storage import load_exams, save_exams
 
 
@@ -70,6 +72,24 @@ def show_countdown(args):
     print(tabulate(rows, headers=["Exam", "Date", "Days Left", "Topics Left"]))
 
 
+def show_plan(args):
+    today = date.today()
+    rows = []
+    for exam in upcoming_exams(load_exams()):
+        remaining = [topic["name"] for topic in exam["topics"] if not topic["done"]]
+        exam_date = date.fromisoformat(exam["date"])
+        for study_day, topic in spread_topics(remaining, today, exam_date):
+            rows.append([study_day.isoformat(), exam["name"], topic])
+
+    if not rows:
+        print("Nothing left to study. Add an exam or enjoy the break!")
+        return
+
+    # Sort by date so topics from different exams are mixed into one day-by-day list.
+    rows.sort(key=lambda row: row[0])
+    print(tabulate(rows, headers=["Date", "Exam", "Topic"]))
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description="Plan your studying before exams.")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -82,7 +102,10 @@ def build_parser():
 
     countdown = commands.add_parser("countdown", help="show days left for each exam")
     countdown.set_defaults(func=show_countdown)
-    
+
+    plan = commands.add_parser("plan", help="show a day-by-day study schedule")
+    plan.set_defaults(func=show_plan)
+
     return parser
 
 
