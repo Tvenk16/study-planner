@@ -5,21 +5,17 @@ A Python command line tool that makes a study schedule for my upcoming exams.
 ## Project Goal
 I usually have a few exams close together and end up cramming whatever comes first. This tool lets me enter my exams, their dates, and the topics on each one. It then splits the topics across the days I have left so I cover everything before the test.
 
-## MVP Scope
-Version 1.0 will let me:
-- Add an exam with a name, date, and topics
-- Make a day by day study schedule
-- See how many days are left until each exam
-- Check off topics I've already studied
-- Save everything to a file so it's still there next time
-
-## Future Plans
-Things I want to add after the MVP:
-- Give harder topics more study days
-- Set a max number of study hours per day
-- Edit or delete an exam
-- Review each topic a second time close to the exam
-- Spread out the work when two exams are close together
+## Roadmap
+- [x] Add an exam with a name, date, and topics
+- [x] Make a day by day study schedule
+- [x] Show how many days are left until each exam
+- [x] Check off topics I've already studied
+- [x] Save everything to a file so it's still there next time
+- [ ] Give harder topics more study days (in progress)
+- [ ] Set a max number of study hours per day
+- [ ] Edit or delete an exam
+- [ ] Review each topic a second time close to the exam
+- [ ] Spread out the work when two exams are close together
 
 ## Tech Stack
 - **Language:** Python 3
