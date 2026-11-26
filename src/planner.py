@@ -20,6 +20,18 @@ def parse_date(text):
         sys.exit(f"Error: '{text}' is not a valid date. Use YYYY-MM-DD, like 2026-12-08.")
 
 
+def parse_topic(text):
+    """Turn "Classes:3" into a topic dict. A topic with no ":number" gets difficulty 1."""
+    name, _, difficulty_text = text.partition(":")
+    name = name.strip()
+    if not difficulty_text:
+        return {"name": name, "done": False, "difficulty": 1}
+
+    if difficulty_text.strip() not in ("1", "2", "3"):
+        sys.exit(f"Error: difficulty for '{name}' must be 1, 2, or 3.")
+    return {"name": name, "done": False, "difficulty": int(difficulty_text)}
+
+
 def find_exam(exams, name):
     """Return the exam with this name, or None. Matching ignores capitalization."""
     for exam in exams:
@@ -44,17 +56,17 @@ def add_exam(args):
     if find_exam(exams, args.name):
         sys.exit(f"Error: an exam named '{args.name}' already exists.")
 
-    topic_names = [name.strip() for name in args.topics.split(",") if name.strip()]
-    if not topic_names:
+    topics = [parse_topic(text) for text in args.topics.split(",") if text.strip()]
+    if not topics:
         sys.exit("Error: give at least one topic, separated by commas.")
 
     exams.append({
         "name": args.name,
         "date": exam_date.isoformat(),
-        "topics": [{"name": name, "done": False} for name in topic_names],
+        "topics": topics,
     })
     save_exams(exams)
-    print(f"Added '{args.name}' on {exam_date} with {len(topic_names)} topics.")
+    print(f"Added '{args.name}' on {exam_date} with {len(topics)} topics.")
 
 
 def show_countdown(args):
@@ -116,7 +128,7 @@ def build_parser():
     add = commands.add_parser("add", help="add an exam")
     add.add_argument("name", help='exam name, like "CS 180 Midterm"')
     add.add_argument("date", help="exam date as YYYY-MM-DD")
-    add.add_argument("topics", help='comma-separated topics, like "Classes,Interfaces"')
+    add.add_argument("topics", help='comma-separated topics, optionally with difficulty 1-3, like "Classes:3,Interfaces"')
     add.set_defaults(func=add_exam)
 
     countdown = commands.add_parser("countdown", help="show days left for each exam")
