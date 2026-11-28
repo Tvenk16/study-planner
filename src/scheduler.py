@@ -25,3 +25,26 @@ def spread_topics(topics, start_date, exam_date):
     return schedule
 
 
+
+
+def build_sessions(topics):
+    """Turn topics into a list of study sessions, where harder topics appear more times.
+
+    Each topic is a dict with "name" and an optional "difficulty" from 1 to 3.
+    """
+    # Topics saved before difficulty existed have no "difficulty" key. Treating them as 1
+    # gives them one session each, so old exams plan exactly the way they did before.
+    difficulties = {topic["name"]: topic.get("difficulty", 1) for topic in topics}
+
+    # Build the list in rounds instead of repeating a hard topic back-to-back.
+    # Round 1 covers every topic once, round 2 repeats topics with difficulty 2+, and
+    # round 3 repeats only difficulty-3 topics. Because later rounds land later in the
+    # schedule, hard topics get a second look closer to exam day.
+    sessions = []
+    for round_number in range(1, 4):
+        for topic in topics:
+            if difficulties[topic["name"]] >= round_number:
+                sessions.append(topic["name"])
+    return sessions
+
+

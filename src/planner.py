@@ -7,7 +7,7 @@ from datetime import date, datetime
 
 from tabulate import tabulate
 
-from scheduler import spread_topics
+from scheduler import build_sessions, spread_topics
 
 from storage import load_exams, save_exams
 
@@ -88,9 +88,10 @@ def show_plan(args):
     today = date.today()
     rows = []
     for exam in upcoming_exams(load_exams()):
-        remaining = [topic["name"] for topic in exam["topics"] if not topic["done"]]
+        remaining = [topic for topic in exam["topics"] if not topic["done"]]
+        sessions = build_sessions(remaining)
         exam_date = date.fromisoformat(exam["date"])
-        for study_day, topic in spread_topics(remaining, today, exam_date):
+        for study_day, topic in spread_topics(sessions, today, exam_date):
             rows.append([study_day.isoformat(), exam["name"], topic])
 
     if not rows:
